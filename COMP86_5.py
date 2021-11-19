@@ -1,5 +1,12 @@
 # -*- coding: utf-8 -*-
 """
+Created on Wed Nov 17 10:00:21 2021
+
+@author: zczl625
+"""
+
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Nov 16 16:46:32 2021
 
 @author: Albert
@@ -116,20 +123,21 @@ def MH_sampler(cipher):
     nex_real = cipher[data[i+1]]
     P = transition[symbol_ls.index(curr_real),symbol_ls.index(nex_real)]
     P1 += np.log(P)
-  print('P1:',P1)
+  #print('P1:',P1)
   
   new,a,b = new_cipher(cipher)
-  P1 = sta[symbol_ls.index(new[data[0]])]
-  P2 = np.log(P1)
+  P2 = sta[symbol_ls.index(new[data[0]])]
+  P2 = np.log(P2)
   for i in range(60-1):
     curr_real = new[data[i]]
     nex_real = new[data[i+1]]
     P = transition[symbol_ls.index(curr_real),symbol_ls.index(nex_real)]
     P2 += np.log(P)
-  print('P2:',P2)
-    
-  t = np.exp(P2-P1)
+  #print('P2:',P2)
+  #print('P2-P1',P2-P1)
+  tt = np.exp(P2-P1)
   u = np.random.uniform()
+  #print('u,t:{} and {}'.format(u,tt))
   '''
   if u<=min(1,t):
     cipher_ = new.copy()
@@ -137,10 +145,11 @@ def MH_sampler(cipher):
   else:
     cipher_ = cipher.copy()
    '''
-  if u<=min(1,t):
-    print('哈哈哈哈哈哈哈')
+  if u<=min(1,tt):
+    #print('哈哈哈哈哈哈哈')
     cipher_ = new.copy()
   else:
+    #print('hhhhhh')
     cipher_ = cipher.copy()
   return cipher_.copy()
 

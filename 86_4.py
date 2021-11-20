@@ -124,7 +124,7 @@ def tran(x):
     return ls
         
 
-def C_new(X,Y):
+def C_new(X,Y,V):
     d = X.shape[0]#1000
     k = Y.shape[0]#4
     t = X.shape[1]#5
@@ -132,9 +132,44 @@ def C_new(X,Y):
     part2 = np.zeros((k,k))
     for i in range(d):
         part1+= tran(X[i]).dot(np.mat(Y[:,i]))
-        part2 += tran(Y[:,i]).dot(np.mat(Y[:,i]))
+        part2 += tran(Y[:,i]).dot(np.mat(Y[:,i]))+V[i]
         
     return part1 @ np.linalg.pinv(part2)
+
+def A_new(Y,Vj,V):
+    k = Y.shape[0]
+    part1 = np.zeros((k,k))
+    part2 = np.zeros((k,k)) 
+    for i in range(1000-1):
+        part1+= tran(Y[:,i+1]).dot(np.mat(Y[:,i]))+Vj[i+1]
+        part2+= tran(Y[:,i]).dot(np.mat(Y[:,i]))+V[i]
+    return part1 @ np.linalg.pinv(part2)
+       
+def R_new(X,Y,V):
+    d = X.shape[0]
+    k = Y.shape[0]
+    t = X.shape[1]
+    part1 = np.zeros((t,t))
+    part2 = np.zeros((t,k))
+    for i in range(d):
+        part1+= tran(X[i]).dot(np.mat(X[i]))
+        part2+= tran(X[i]).dot(np.mat(Y[:,i]))
+    C = C_new(X,Y,V)
+    
+    return (part1 -part2.dot(C.T))/d
+    
+def Q_new(Y,Vj,V):
+   k = Y.shape[0]
+   d = 1000
+   part1 = np.zeros((k,k))
+   part2 = np.zeros((k,k))
+   for i in range(1,1000):
+       part1 += tran(Y[:,i]).dot(np.mat(Y[:,i]))+V[i]
+       part2 += tran(Y[:,i]).dot(np.mat(Y[:,i-1]))+ Vj[i]
+   A = A_new(Y,Vj,V)
+   
+   return (part1 - part2.dot(A.T))/(d-1)
+   
         
         
         
@@ -158,10 +193,11 @@ if __name__ =='__main__':
     #AAAA = run_ssm_kalman(X.T, y_init, Q_init, A, Q, C, R, mode='smooth')
     #print(np.linalg.cholesky(AAAA[1][0,:,0].reshape((2,2))))
     
- 
+    '''
     Y,V,Vj,L = run_ssm_kalman(X.T, y_init, Q_init, A, Q, C, R, mode='filt')
     plt.plot(Y.T)
     ls = []
+    '''
     '''
     for i in range(V.shape[0]):
         try:
@@ -169,10 +205,26 @@ if __name__ =='__main__':
         except:
             pass
     '''
+    '''
     for i in range(V.shape[0]):
         ls.append(logdet(V[i]))
     plt.plot(ls)
     plt.show()
+    '''
+    
+    Iter = 50
+    LOG = []
+    for i in range(Iter):
+       Y,V,Vj,L = run_ssm_kalman(X.T, y_init, Q_init, A, Q, C, R, mode='smooth')
+       C = C_new(X,Y,V)
+       A = A_new(Y,Vj,V)
+       R = R_new(X,Y,V)
+       Q = Q_new(Y,Vj,V)
+       LOG.append(L.mean())
+    plt.plot(LOG)
+    plt.show()
+       
+       
     
     
     
